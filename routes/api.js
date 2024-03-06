@@ -3,7 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const db = process.env.MONGODB_URI;
+//const db = "mongodb://localhost:27017/classdata";
+
 const RegisterData = require('../models/register');
 const items = require('../models/items');
 const MessageData = require('../models/message');
@@ -56,15 +59,17 @@ async function Register(req,res)
 
     newRegisterData.save().then((savedData) => {
         //console.log("Data Saved Successfully in Mongo DB",savedData.RID);
-        res.status(200).json(
-            {
-                'RID' : savedData.RID,
-                'firstName' : savedData.firstName,
-                'lastName' : savedData.lastName,
-                'batch': savedData.batch
-            }
-        );
+        var data = {
+            'RID' : savedData.RID,
+            'firstName' : savedData.firstName,
+            'lastName' : savedData.lastName,
+            'batch': savedData.batch,
+            'email' : savedData.email,
+        };
+        
+        res.status(200).json(data);
 
+        SendMail(data);
 
     }).catch((error) =>{
         console.log("Error While Saving Data",error);
@@ -103,5 +108,70 @@ async function Message(req,res)
     })
 }
 
+function SendMail(data)
+{
+    var batch = " ";
+
+    // Create a transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'programmersden1256@gmail.com', // Your email address
+            pass: 'nrqt vyiy craa vdeq' // Your email password
+        }
+    });
+
+    switch(data.batch)
+    {
+        case "CCJ" :
+            {
+                batch = "C, C++ and Java Programming";
+            }
+            break;
+        case "MEAN" :
+            {
+                batch = "MEAN Stack Web Development";
+            }
+            break;
+        case "GO" :
+            {
+                batch = "Programming in GoLang";
+                break;
+            }
+        case "PY" :
+            {
+                batch = "Programming in Python";
+            }
+            break;
+        default :
+        {
+            console.log("Invalid Batch Selected");
+            return;
+        }
+    }
+
+    let emailBody = 'Hello '+data.firstName+' '+data.lastName+',\n\n'+'Welcome To Programmers Den Family,\n\n'+
+    'Your Registration ID is RID:'+data.RID+'. Save it For Further Use.'+'\n\nRegistered For Batch : '+batch+
+    '\n\nNote : Please Pay Registration Fees To Confirm Your Registration. Contact Us For Bank Details Or Come At Class To Pay in Cash!!!'
+    +'\n\nRegards,\nPakshal Jain(Programmers Den)';
+
+    // Set up email data
+    let mailOptions = {
+        from: 'thechainsmokers78@gmail.com', // Sender address
+        to: data.email, // List of recipients
+        subject: 'Registration ID and Batch Details', // Subject line
+        text: emailBody // Plain text body
+    };
+
+    // Send email
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error occurred:', error.message);
+        } else {
+            console.log('Email sent successfully!');
+            console.log('Message ID:', info.messageId);
+        }
+    });
+}
 module.exports = router;
 

@@ -6,7 +6,7 @@ const path = require('path');
 
 const api = require('./routes/api');
 const port = process.env.PORT;
-
+//const port = 3000;
 const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname,'dist')));
