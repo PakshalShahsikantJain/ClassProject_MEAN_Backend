@@ -157,7 +157,7 @@ function SendMail(data)
 
     // Set up email data
     let mailOptions = {
-        from: 'thechainsmokers78@gmail.com', // Sender address
+        from: 'programmersden1256@gmail.com', // Sender address
         to: data.email, // List of recipients
         subject: 'Registration ID and Batch Details', // Subject line
         text: emailBody // Plain text body
